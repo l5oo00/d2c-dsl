@@ -3,9 +3,11 @@
 标准里本质是定义了一些标签节点， 将这些标签进行组合、嵌套即可描述任意 UI 界面。
 具体标签的 DSL 描述里， 大部分属性的值都可以绑定数据， 所有标签都可以使用条件语法。
 
-以下就是具体的类型定义：
+以下是具体的类型定义：
 
 ## 标签类型
+
+以下是标签的通用类型定义， 相当于基类， 实际并不会使用这些通用标签类型，而是会使用后面“标签定义”部分定义的具体标签。
 
 ### 基础标签
 
@@ -23,11 +25,6 @@ interface Node {
      * 注意： 每个标签可能仅支持 Style 类型里部分特定属性， 具体参考后面每个具体标签的定义
      */
     style?: Style;
-
-    /**
-     * 其它属性，有些标签可能会有一些特定的属性，可参见具体标签的定义
-     */
-    props?: Record<string, any>;
 
     /**
      * 条件判断，目前支持 if、show、for， 具体参考后面 Condition 类型定义
@@ -375,7 +372,7 @@ interface Condition {
 
 ### `mfor`
 
-表示将一个节点循环输出，类似 vue.js 里的  `v-for` 指令，具体定义如下：
+表示将一个节点循环输出，类似 vue.js 里的  `v-for` 指令，一般在遍历数组或对象时用来，具体定义如下：
 
 ```typescript
 interface ConditionFor {
@@ -430,9 +427,9 @@ interface ConditionFor {
 - `mif: '${x} > 1'`
 - `show: '${isShow}'`
 
-## 标签
+## 标签定义
 
-以下是标准里支持的所有标签：
+以下是标准里支持的所有标签的具体定义， 生成 DSL 时只应该使用以下定义的标签：
 
 ### `flex` 标签
 
@@ -460,6 +457,7 @@ interface FlexStyle extends GeneralStyle {
 
 // flex 标签的定义
 interface FlexNode extends ContainerNode {
+    // 标签名固定为 'flex'
     type: 'flex';
     style: FlexStyle;
 }
@@ -487,6 +485,7 @@ interface FrameStyle extends GeneralStyle {
 
 // frameLayout 标签的定义
 interface FrameNode extends ContainerNode {
+    // 标签名固定为 'frameLayout'
     type: 'frameLayout';
     style: FrameStyle;
 }
@@ -517,6 +516,7 @@ interface LinearStyle extends GeneralStyle {
 
 // linearLayout 标签的定义
 interface LinearNode extends ContainerNode {
+    // 标签名固定为 'linearLayout'
     type: 'linearLayout';
     style: LinearStyle;
 }
@@ -542,6 +542,7 @@ interface ScrollStyle extends GeneralStyle {
 
 // scroll 标签的定义
 interface ScrollNode extends ContainerNode {
+    // 标签名固定为 'scroll'
     type: 'scroll';
     style: ScrollStyle;
 }
@@ -569,6 +570,7 @@ interface SpanStyle {
 
 // span 标签的定义
 interface SpanNode extends LeafNode {
+    // 标签名固定为 'span'
     type: 'span';
     style: SpanStyle;
 
@@ -602,6 +604,7 @@ interface ImgStyle extends GeneralStyle {
 
 // img 标签的定义
 interface ImgNode extends LeafNode {
+    // 标签名固定为 'img'
     type: 'img';
     style: ImgStyle;
 }
@@ -634,6 +637,7 @@ interface LottieStyle extends GeneralStyle {
 
 // lottie 标签的定义
 interface LottieNode extends Node {
+    // 标签名固定为 'lottie'
     type: 'lottie';
     style: LottieStyle;
 }
@@ -645,7 +649,7 @@ interface LottieNode extends Node {
 一个合法的 DSL 描述必须符合以下类型：
 
 ```typescript
-type DSL = FlexNode | FrameNode | LinearNode | ScrollNode | SpanNode | ImgNode;
+type DSLNode = FlexNode | FrameNode | LinearNode | ScrollNode | SpanNode | ImgNode;
 ```
 
 即：
@@ -711,6 +715,7 @@ DSL 描述：
                 {
                     type: 'span',
                     condition: {
+                        // 使用 mfor 语法来遍历数组， 以便精简 DSL 体积
                         mfor: {
                             list: '${data.x}', // 变量 x 是个数组
                             item: 'item', // 值就是对应单个列表项的变量名， 可以指定任意合法的变量名
@@ -734,6 +739,7 @@ DSL 描述：
                         flexDirection: 'row',
                     },
                     condition: {
+                        // 使用 mfor 语法来遍历对象， 以便精简 DSL 体积
                         mfor: {
                             list: '${data.y}', // 也支持对 对象使用 mfor 条件语法
                             item: 'val', // 值可以指定任意合法的变量名， 对应对象里单个键值对的值
