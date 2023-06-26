@@ -9,6 +9,8 @@
 
 以下是标签的通用类型定义， 相当于基类， 实际并不会使用这些通用标签类型，而是会使用后面“标签定义”部分定义的具体标签。
 
+注意， 后续凡是提到“标签名”时， 指的都是这个标签的 DSL 定义里的 `type` 字段。
+
 ### 基础标签
 
 所有的标签的 DSL 描述都需要符合以下 Node 类型。
@@ -649,15 +651,15 @@ interface LottieNode extends Node {
 一个合法的 DSL 描述必须符合以下类型：
 
 ```typescript
-type DSLNode = FlexNode | FrameNode | LinearNode | ScrollNode | SpanNode | ImgNode;
+type DSLNode = FlexNode | FrameNode | LinearNode | ScrollNode | SpanNode | ImgNode | LottieNode;
 ```
 
 即：
 
-- 只能使用定义的这些标签，即 type 字段的值绝对不能出现其他未定义的标签名
-- 各个标签下只能使用定义里对应的样式属性， 即 style 字段下绝对不能出现该标签定义里未出现的属性名
+- DSL 描述里只能使用 `DSLNode` 里定义的这些标签， `type` 字段的值绝对不能出现其他未定义的标签名
+- 各个标签里只能使用该标签类型定义里声明的样式属性， `style` 字段下绝对不能出现该标签类型定义里未声明的属性名(注意定义里使用了 typescript 的  继承语法)
 
-以下是一个基于特点 mock 数据的 DSL 示例：
+以下是一个基于特定 mock 数据的 DSL 示例：
 
 ### 示例
 
@@ -684,6 +686,7 @@ DSL 描述：
 > 注意：为了方便描述，DSL 里省略了大部分的样式属性， 同时没有使用 JSON 格式， 而是 JS 里的对象格式
 
 ```javascript
+// 需要严格符合 DSLNode 类型
 {
     type: 'flex';
     style: {
