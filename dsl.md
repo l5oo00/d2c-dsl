@@ -502,7 +502,7 @@ interface LottieNode extends Node {
 }
 
 /**
- * DSL 描述需要符合以下格式
+ * 以下即是标准里定义的所有标签，标签名为每个标签定义里的 type 字段，每个 DSL 描述都需要符合以下格式
  */
 export type DSLNode = FlexNode | FrameNode | LinearNode | ScrollNode | SpanNode | ImgNode | LottieNode;
 
