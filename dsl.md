@@ -376,7 +376,7 @@ interface FrameStyle extends GeneralStyle {
 
 // frameLayout 标签的定义，是较常用的布局标签之一： 层叠布局，类似 CSS 里 `position: absolute` 的效果，只用在合适的场景里
 interface FrameNode extends ContainerNode {
-    // 标签名固定为 'frameLayout'
+    // 标签名固定为 'frameLayout' , 不是 'frame'
     type: 'frameLayout';
     style: FrameStyle;
 }
@@ -401,7 +401,7 @@ interface LinearStyle extends GeneralStyle {
 
 // linearLayout 标签的定义，是常用的布局标签之一： 线性布局，类似 Android 里的 linearLayout
 interface LinearNode extends ContainerNode {
-    // 标签名固定为 'linearLayout'
+    // 标签名固定为 'linearLayout' , 不是 'linear'
     type: 'linearLayout';
     style: LinearStyle;
 }
@@ -443,7 +443,7 @@ interface SpanStyle {
 
 // span 标签的定义，是常用的内容标签之一： 纯文本标签， 用来渲染文字， 所有文字内容都只能包含在一个 span 标签里
 interface SpanNode extends LeafNode {
-    // 标签名固定为 'span'
+    // 标签名固定为 'span' , 不是 'text'
     type: 'span';
     style: SpanStyle;
 
@@ -458,7 +458,7 @@ interface SpanNode extends LeafNode {
  * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
  */
 interface ImgStyle extends GeneralStyle {
-    // 图片地址，一个 URL
+    // 图片地址，一个 URL, 注意， src 属性是在标签的 style 字段下， 而不是标签的根节点里
     src: string;
     scaleType: ImgScaleType;
     placeHolder?: string;
@@ -471,7 +471,7 @@ interface ImgStyle extends GeneralStyle {
 
 // img 标签的定义，是常用的内容标签之一： 图片标签，常用来显示图片
 interface ImgNode extends LeafNode {
-    // 标签名固定为 'img'
+    // 标签名固定为 'img' , 不是 'image'
     type: 'img';
     style: ImgStyle;
 }
@@ -481,7 +481,7 @@ interface ImgNode extends LeafNode {
  * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
  */
 interface LottieStyle extends GeneralStyle {
-    // lottie 资源地址， 一个 URL
+    // lottie 资源地址， 一个 URL， 注意， src 属性是在标签的 style 字段下， 而不是标签的根节点里
     src: string;
     scaleType: ImgScaleType;
     placeHolder?: string;
