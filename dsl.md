@@ -645,9 +645,9 @@ interface LottieNode extends Node {
 }
 ```
 
-## 最后
+## 总结
 
-一个合法的 DSL 描述必须符合以下类型：
+一个合法的 DSL 描述里， 可以使用的标签如下：
 
 ```typescript
 type DSLNode = FlexNode | FrameNode | LinearNode | ScrollNode | SpanNode | ImgNode | LottieNode;
@@ -655,8 +655,8 @@ type DSLNode = FlexNode | FrameNode | LinearNode | ScrollNode | SpanNode | ImgNo
 
 即：
 
-- DSL 描述里只能使用 `DSLNode` 里定义的这些标签， `type` 字段的值绝对不能出现其他未定义的标签名
-- 各个标签里只能使用该标签类型定义里声明的样式属性， `style` 字段下绝对不能出现该标签类型定义里未声明的属性名(注意定义里使用了 typescript 的  继承语法)
+- DSL 描述里只能使用 `DSLNode` 里定义的这些标签，标签名即为各个标签类型定义里的 `type` 字段， `type` 字段的值绝对不能出现其他未定义的标签名
+- 每个标签里只能使用该标签类型定义里声明的样式属性， `style` 字段下绝对不能出现该标签类型定义里未声明的属性名(注意定义里使用了 typescript 的  继承语法)
 
 以下是一个基于特定 mock 数据的 DSL 示例：
 
