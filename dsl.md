@@ -2,9 +2,11 @@
 
 标准里本质是定义了一些标签节点， 将这些标签进行组合、嵌套即可描述任意 UI 界面。
 
+> 注意： 这个标准和 HTML 、CSS 完全无关，是一份完全独立的、唯一的标准定义。
+
 ## 类型定义
 
-下面是使用 typescript 定义的 DSL 类型， 所有 DSL 描述都需要符合下面定义的 `DSLNode` 类型：
+下面是使用 typescript 描述的 DSL 标准定义：
 
 ```typescript
 // 展示策略
@@ -508,6 +510,8 @@ export type DSLNode = FlexNode | FrameNode | LinearNode | ScrollNode | SpanNode 
 
 ```
 
+最后导出的 `DSLNode` 类型包含了所有支持的标签类型，每个标签的类型定义里的 style 字段， 也声明了这个标签所有能使用的所有样式属性。
+
 ## 绑定数据
 
 DSL 里大部分字段的值，可以绑定数据里特定的字段， 格式为 '${字段名}' ， 其中字段名支持多级，数据整体本身命名固定为 `data`。
@@ -563,7 +567,6 @@ DSL 里所有标签都可以使用条件语法，在标签节点的 `condition` 
 
 - `mif: '${x} > 1'`
 - `show: '${isShow}'`
-
 
 ## 示例
 
