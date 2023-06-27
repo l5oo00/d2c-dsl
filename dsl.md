@@ -374,7 +374,7 @@ interface Condition {
 
 ### `mfor`
 
-表示将一个节点循环输出，类似 vue.js 里的  `v-for` 指令，一般在遍历数组或对象时用来，具体定义如下：
+表示将一个节点循环输出，一般在遍历数组或对象时用来，具体定义如下：
 
 ```typescript
 interface ConditionFor {
