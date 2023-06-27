@@ -1,12 +1,152 @@
-# D2C 平台专用 DSL 标准定义
+# D2C 平台的 DSL 标准定义
 
 标准里本质是定义了一些标签节点， 将这些标签进行组合、嵌套即可描述任意 UI 界面。
+具体标签的 DSL 描述里， 大部分属性的值都可以绑定数据， 所有标签都可以使用条件语法。
 
-> 注意： 这个标准和 HTML 、CSS 完全无关，是一份完全独立的、唯一的标准定义。
+以下是具体的类型定义：
 
-## 类型定义
+## 标签基础类型
 
-下面是使用 typescript 描述的 DSL 标准定义：
+以下是标签的基础类型定义， 相当于基类， 实际并不会使用这些通用标签类型，而是会使用后面【标签定义】部分定义的具体标签。
+
+注意， 后续凡是提到“标签名”时， 指的都是这个标签的类型定义里的 `type` 字段。
+
+### 基础标签
+
+所有的标签的 DSL 描述都需要符合以下 Node 类型。
+
+```typescript
+interface Node {
+    /**
+     * 标签名，取值唯一，不能重复
+     */
+    type: string;
+
+    /**
+     * 样式属性，具体参考后面的 Style 类型定义
+     * 注意： 每个标签可能仅支持 Style 类型里部分特定属性， 具体参考后面每个具体标签的定义
+     */
+    style?: Style;
+
+    /**
+     * 条件判断，目前支持 if、show、for， 具体参考后面 Condition 类型定义
+     */
+    condition?: Condition;
+
+    /**
+     * 子节点，可以有多个
+     */
+    children?: Node[];
+}
+```
+
+### 容器标签
+
+容器标签可以包含其他子节点， 比较常用， 我们专门为它定义了一个类型：
+
+```typescript
+interface ContainerNode extends Node {
+    // 容器标签一定有 children 字段， 类型必须是一个数组
+    children: Node[];
+}
+```
+
+### 叶子标签
+
+叶子标签不能包含其他子节点， 比较常用， 我们专门为它定义了一个类型：
+
+```typescript
+type LeafNode = Omit<Node, 'children' | 'text'>;
+```
+
+## 样式
+
+### 支持的样式属性列表
+
+标签支持的样式属性是有限的， 下面 `Style` 类型里的属性就是所有支持的样式属性。
+
+> 注意： DSL 描述里的 style 字段里， 只能使用 `Style` 类型里列出来的属性
+
+```typescript
+interface Style {
+    // 展示策略
+    visibility?: Display;
+    // 宽度。单位为px的数值
+    width?: number;
+
+    // 高度，单位为px的数值
+    height?: number;
+
+    // 外边距，值必须是包含四部分，依次代表上、右、下、左四个方向的间距，单位为px， 示例: margin: '10px 10px 8px 4px'
+    margin?: string;
+
+    // 内边距，值必须是包含四部分，依次代表上、右、下、左四个方向的间距，单位为px， 示例: padding: '10px 10px 8px 4px'
+    padding?: string;
+    // 矩形边框宽度。单位为px
+    borderWidth?: number;
+    // 矩形边框颜色。取值同css中border-color
+    borderColor?: string;
+    // 圆角边框，单位为px
+    borderRadius?: string;
+    // 背景颜色，仅支持 RGB 格式的颜色值， 示例: bgColor: '#fefefe'
+    bgColor?: string;
+    // 用于为一个元素设置一个背景图像。值为图片地址
+    bgImg?: string;
+    // 设置背景图片大小
+    scaleType?: ImgScaleType;
+    // 设置了元素溢出时所需的行为
+    overflow?: Overflow;
+    // 属性指定了内部元素是如何在 flex 容器中布局的，定义了主轴的方向 (正方向或反方向)，flex 容器中必须包括这个值
+    flexDirection?: FlexDirection;
+    // 属性指定 flex 元素单行显示还是多行显示。如果允许换行，这个属性允许你控制行的堆叠方向
+    flexWrap?: FlexWrap;
+    // 定义 flex 直接子元素在交叉轴上如何对齐
+    alignItems?: AlignItems;
+    // 定义 flex 直接子元素在主轴上的对齐方式
+    justifyContent?: JustifyContent;
+    // 布局方位(linear/frame直接子节点应用)
+    gravity?: Gravity;
+    // 类似css的z-index
+    weight?: number;
+    // 定义项目的放大比例(flex直接子元素应用)
+    flexGrow?: FlexGrow;
+    // 定义了项目的缩小比例(flex直接子元素应用)
+    flexShrink?: FlexShrink;
+    // 允许 flex 的直接子元素有与其他直接子元素不一样的对齐方式，可覆盖alignItems属性
+    alignSelf?: AlignSelf;
+    // 图片或者lottie地址
+    src: string;
+    placeHolder?: string;
+    loopTime?: string;
+    scale?: string;
+    // linear元素的排列方向
+    orientation?: Orientation;
+    weightSum?: string;
+    gap?: string;
+    showNum?: string;
+    repeat?: string;
+    resizeMode?: LottieResizeMode;
+    // 文本字体大小k。单位为px。
+    fontSize: `${number}`;
+    // 文本颜色。仅支持 RGB 格式的颜色值， 示例: color: '#fefefe'
+    color: string;
+    // 文本截断位置
+    ellipsis: Ellipsis;
+    // 文本粗细程度
+    fontWeight: FontWeight;
+    strokeWidth?: string;
+    // 文本行高。单位为px。
+    lineHeight?: string;
+    // 文本修饰线
+    decoration?: TextDecoration;
+}
+```
+
+各个属性值对应的类型如下：
+
+### 样式属性的值类型定义
+
+以下是上面样式属性里用到的各个值类型的定义
 
 ```typescript
 // 展示策略
@@ -187,330 +327,28 @@ const enum LottieRepeat {
     Yse = '1',
     No = '0'
 }
+```
 
-// 样式属性列表
-interface Style {
-    // 展示策略
-    visibility?: Display;
-    // 宽度。单位为px的数值
-    width?: number;
+### 通用样式定义
 
-    // 高度，单位为px的数值
-    height?: number;
+以下样式属性集合比较常用， 我们单独定义一个类型， 方便后面定义标签时复用。
 
-    // 外边距，值必须是包含四部分，依次代表上、右、下、左四个方向的间距，单位为px， 示例: margin: '10px 10px 8px 4px'
-    margin?: string;
-
-    // 内边距，值必须是包含四部分，依次代表上、右、下、左四个方向的间距，单位为px， 示例: padding: '10px 10px 8px 4px'
-    padding?: string;
-    // 矩形边框宽度。单位为px
-    borderWidth?: number;
-    // 矩形边框颜色。取值同css中border-color
-    borderColor?: string;
-    // 圆角边框，单位为px
-    borderRadius?: string;
-    // 背景颜色，仅支持 RGB 格式的颜色值， 示例: bgColor: '#fefefe'
-    bgColor?: string;
-    // 用于为一个元素设置一个背景图像。值为图片地址
-    bgImg?: string;
-    // 设置背景图片大小
-    scaleType?: ImgScaleType;
-    // 设置了元素溢出时所需的行为
-    overflow?: Overflow;
-    // 属性指定了内部元素是如何在 flex 容器中布局的，定义了主轴的方向 (正方向或反方向)，flex 容器中必须包括这个值
-    flexDirection?: FlexDirection;
-    // 属性指定 flex 元素单行显示还是多行显示。如果允许换行，这个属性允许你控制行的堆叠方向
-    flexWrap?: FlexWrap;
-    // 定义 flex 直接子元素在交叉轴上如何对齐
-    alignItems?: AlignItems;
-    // 定义 flex 直接子元素在主轴上的对齐方式
-    justifyContent?: JustifyContent;
-    // 布局方位(linear/frame直接子节点应用)
-    gravity?: Gravity;
-    // 类似css的z-index
-    weight?: number;
-    // 定义项目的放大比例(flex直接子元素应用)
-    flexGrow?: FlexGrow;
-    // 定义了项目的缩小比例(flex直接子元素应用)
-    flexShrink?: FlexShrink;
-    // 允许 flex 的直接子元素有与其他直接子元素不一样的对齐方式，可覆盖alignItems属性
-    alignSelf?: AlignSelf;
-    // 图片或者lottie地址
-    src?: string;
-    placeHolder?: string;
-    loopTime?: string;
-    scale?: string;
-    // linear元素的排列方向
-    orientation?: Orientation;
-    weightSum?: string;
-    gap?: string;
-    showNum?: string;
-    repeat?: string;
-    resizeMode?: LottieResizeMode;
-    // 文本字体大小k。单位为px。
-    fontSize?: number;
-    // 文本颜色。仅支持 RGB 格式的颜色值， 示例: color: '#fefefe'
-    color?: string;
-    // 文本截断位置
-    ellipsis?: Ellipsis;
-    // 文本粗细程度
-    fontWeight?: FontWeight;
-    strokeWidth?: string;
-    // 文本行高。单位为px。
-    lineHeight?: string;
-    // 文本修饰线
-    decoration?: TextDecoration;
-}
-
+```typescript
 /**
  * 通用样式属性，属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
  */
 interface GeneralStyle {
     visibility?: Display;
-    width?: number;
-    height?: number;
+    width?: string;
+    height?: string;
     margin?: string;
     padding?: string;
-    borderWidth?: number;
+    borderWidth?: string;
     borderColor?: string;
     borderRadius?: string;
     bgColor?: string;
 }
-
-// 下面是条件类型定义
-
-// 条件 For 类型， 类似 vue 里的  v-for
-interface ConditionFor {
-    // 循环的列表变量，支持数组和对象， 值可以是数组或对象常量，也可以绑定数据
-    list: string;
-
-    item: string; // 遍历列表项的变量名，代表该项的值
-    index: string; // 遍历列表项的索引变量名， 代表该项的索引
-}
-
-// 条件类型
-interface Condition {
-    // 是否渲染
-    mif?: string;
-    // 是否展示
-    show?: string;
-    // 循环渲染
-    mfor?: ConditionFor;
-}
-
-// 标签通用类型
-interface Node {
-    /**
-     * 标签名，取值唯一，不能重复
-     */
-    type: string;
-
-    /**
-     * 样式属性，具体参考后面的 Style 类型定义
-     * 注意： 每个标签可能仅支持 Style 类型里部分特定属性， 具体参考后面每个具体标签的定义
-     */
-    style?: Style;
-
-    /**
-     * 条件判断，目前支持 if、show、for， 具体参考后面 Condition 类型定义
-     */
-    condition?: Condition;
-
-    /**
-     * 子节点，可以有多个
-     */
-    children?: Node[];
-}
-
-// 容器标签，可以包含其他子节点
-interface ContainerNode extends Node {
-    // 容器标签一定有 children 字段， 类型必须是一个数组
-    children: Node[];
-}
-
-// 叶子标签，不可以包含其他子节点
-type LeafNode = Omit<Node, 'children' | 'text'>;
-
-// 以下是所有支持的标签的具体定义， 包含了每个标签对应的 样式属性
-
-/**
- * flex 标签支持的样式属性， flex 标签只能使用这些样式属性
- * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
- */
-interface FlexStyle extends GeneralStyle {
-    flexDirection: FlexDirection;
-    bgImg?: string;
-    scaleType?: ImgScaleType;
-    overflow?: Overflow;
-    flexWrap?: FlexWrap;
-    alignItems?: AlignItems;
-    justifyContent?: JustifyContent;
-    gravity?: Gravity;
-    weight?: number;
-    flexGrow?: FlexGrow;
-    flexShrink?: FlexShrink;
-    alignSelf?: AlignSelf;
-}
-
-// flex 标签的定义，是最常用的布局标签之一：弹性布局
-interface FlexNode extends ContainerNode {
-    // 标签名固定为 'flex'
-    type: 'flex';
-    style: FlexStyle;
-}
-
-/**
- * frameLayout 标签支持的样式属性， frameLayout 标签只能使用这些样式属性
- * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
- */
-interface FrameStyle extends GeneralStyle {
-    bgImg?: string;
-    scaleType?: ImgScaleType;
-    overflow?: Overflow;
-    gravity?: Gravity;
-    weight?: number;
-    flexGrow?: FlexGrow;
-    flexShrink?: FlexShrink;
-    alignSelf?: AlignSelf;
-}
-
-// frameLayout 标签的定义，是较常用的布局标签之一： 层叠布局，类似 CSS 里 `position: absolute` 的效果，只用在合适的场景里
-interface FrameNode extends ContainerNode {
-    // 标签名固定为 'frameLayout' , 不是 'frame'
-    type: 'frameLayout';
-    style: FrameStyle;
-}
-
-/**
- * linearLayout 标签支持的样式属性， linearLayout 标签只能使用这些样式属性
- * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
- */
-interface LinearStyle extends GeneralStyle {
-    bgImg?: string;
-    scaleType?: ImgScaleType;
-    orientation?: Orientation;
-    weightSum?: string;
-    gap?: string;
-    showNum?: string;
-    gravity?: Gravity;
-    weight?: number;
-    flexGrow?: FlexGrow;
-    flexShrink?: FlexShrink;
-    alignSelf?: AlignSelf;
-}
-
-// linearLayout 标签的定义，是常用的布局标签之一： 线性布局，类似 Android 里的 linearLayout
-interface LinearNode extends ContainerNode {
-    // 标签名固定为 'linearLayout' , 不是 'linear'
-    type: 'linearLayout';
-    style: LinearStyle;
-}
-
-/**
- * scroll 标签支持的样式属性， scroll 标签只能使用这些样式属性
- * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
- */
-interface ScrollStyle extends GeneralStyle {
-    orientation: Orientation;
-    gravity?: Gravity;
-    weight?: number;
-    flexGrow?: FlexGrow;
-    flexShrink?: FlexShrink;
-    alignSelf?: AlignSelf;
-}
-
-// scroll 标签的定义，是较常用的布局标签之一： 滚动布局，内部的子元素高度或宽度超出容器尺寸后， 支持滚动，只用在合适的场景里
-interface ScrollNode extends ContainerNode {
-    // 标签名固定为 'scroll'
-    type: 'scroll';
-    style: ScrollStyle;
-}
-
-/**
- * span 标签支持的样式属性， span 标签只能使用这些样式属性
- * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
- */
-interface SpanStyle {
-    visibility?: Display;
-    fontSize: number;
-    color: string;
-    ellipsis: Ellipsis;
-    fontWeight: FontWeight;
-    strokeWidth?: string;
-    lineHeight?: string;
-    decoration?: TextDecoration;
-}
-
-// span 标签的定义，是常用的内容标签之一： 纯文本标签， 用来渲染文字， 所有文字内容都只能包含在一个 span 标签里
-interface SpanNode extends LeafNode {
-    // 标签名固定为 'span' , 不是 'text'
-    type: 'span';
-    style: SpanStyle;
-
-    /**
-     * 文本内容
-     */
-    text: string;
-}
-
-/**
- * img 标签支持的样式属性， img 标签只能使用这些样式属性
- * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
- */
-interface ImgStyle extends GeneralStyle {
-    // 图片地址，一个 URL, 注意， src 属性是在标签的 style 字段下， 而不是标签的根节点里
-    src: string;
-    scaleType: ImgScaleType;
-    placeHolder?: string;
-    gravity?: Gravity;
-    weight?: number;
-    flexGrow?: FlexGrow;
-    flexShrink?: FlexShrink;
-    alignSelf?: AlignSelf;
-}
-
-// img 标签的定义，是常用的内容标签之一： 图片标签，常用来显示图片
-interface ImgNode extends LeafNode {
-    // 标签名固定为 'img' , 不是 'image'
-    type: 'img';
-    style: ImgStyle;
-}
-
-/**
- * lottie 标签支持的样式属性， lottie 标签只能使用这些样式属性
- * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
- */
-interface LottieStyle extends GeneralStyle {
-    // lottie 资源地址， 一个 URL， 注意， src 属性是在标签的 style 字段下， 而不是标签的根节点里
-    src: string;
-    scaleType: ImgScaleType;
-    placeHolder?: string;
-    loopTime?: string;
-    scale?: string;
-    repeat?: string;
-    resizeMode?: LottieResizeMode;
-    gravity?: Gravity;
-    weight?: number;
-    flexGrow?: FlexGrow;
-    flexShrink?: FlexShrink;
-    alignSelf?: AlignSelf;
-}
-
-// lottie 标签的定义，是内容标签之一： lottie 标签， 语法类似 img 标签，但只能用来显示 lottie 资源
-interface LottieNode extends Node {
-    // 标签名固定为 'lottie'
-    type: 'lottie';
-    style: LottieStyle;
-}
-
-/**
- * 以下就是标准里定义的所有标签，标签名为每个标签类型定义里的 type 字段，每个 DSL 描述都需要符合以下格式
- */
-export type DSLNode = FlexNode | FrameNode | LinearNode | ScrollNode | SpanNode | ImgNode | LottieNode;
-
 ```
-
-最后导出的 `DSLNode` 类型包含了所有支持的标签类型，每个标签的类型定义里的 style 字段， 也声明了这个标签所有能使用的所有样式属性。
 
 ## 绑定数据
 
@@ -520,11 +358,34 @@ DSL 里大部分字段的值，可以绑定数据里特定的字段， 格式为
 
 ## 条件语法
 
-DSL 里所有标签都可以使用条件语法，在标签节点的 `condition` 字段里声明即可， 支持 `mfor` `mif` `show` 三种语法。
+DSL 里也可以使用条件语法，在标签节点的 `condition` 字段里声明即可， 支持 `mfor` `mif` `show` 三种语法。
+
+```typescript
+// 条件类型
+interface Condition {
+    // 是否渲染
+    mif?: string;
+    // 是否展示
+    show?: string;
+    // 循环渲染
+    mfor?: ConditionFor;
+}
+```
 
 ### `mfor`
 
-表示将一个节点循环输出，类似 vue.js 里的  `v-for` 指令，一般在遍历数组或对象时用来，具体定义参考上面的 `ConditionFor` 类型。
+表示将一个节点循环输出，类似 vue.js 里的  `v-for` 指令，一般在遍历数组或对象时用来，具体定义如下：
+
+```typescript
+interface ConditionFor {
+    // 循环的列表变量，支持数组和对象， 值可以是数组或对象常量，也可以绑定数据
+    list: string;
+
+    item: string; // 遍历列表项的变量名，代表该项的值
+    index: string; // 遍历列表项的索引变量名， 代表该项的索引
+}
+```
+
 以下是使用 `mfor` 的示例：
 
 遍历数组：
@@ -568,7 +429,238 @@ DSL 里所有标签都可以使用条件语法，在标签节点的 `condition` 
 - `mif: '${x} > 1'`
 - `show: '${isShow}'`
 
-## 示例
+## 所有标签定义
+
+以下是所有支持的、可以实际使用的标签的具体定义， 生成 DSL 时只能使用这些标签：
+
+### `flex` 标签
+
+最常用的布局标签之一：弹性布局， 标签名固定为 'flex'， 类型定义如下：
+
+```typescript
+/**
+ * flex 标签支持的样式属性， flex 标签只能使用这些样式属性
+ * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
+ */
+interface FlexStyle extends GeneralStyle {
+    flexDirection: FlexDirection;
+    bgImg?: string;
+    scaleType?: ImgScaleType;
+    overflow?: Overflow;
+    flexWrap?: FlexWrap;
+    alignItems?: AlignItems;
+    justifyContent?: JustifyContent;
+    gravity?: Gravity;
+    weight?: number;
+    flexGrow?: FlexGrow;
+    flexShrink?: FlexShrink;
+    alignSelf?: AlignSelf;
+}
+
+// flex 标签的定义
+interface FlexNode extends ContainerNode {
+    // 标签名固定为 'flex'
+    type: 'flex';
+    style: FlexStyle;
+}
+```
+
+### `frameLayout` 标签
+
+较常用的布局标签之一： 层叠布局，类似 CSS 里 `position: absolute` 的效果，只用在合适的场景里， 标签名固定为 'frameLayout'，类型定义如下：
+
+```typescript
+/**
+ * frameLayout 标签支持的样式属性， frameLayout 标签只能使用这些样式属性
+ * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
+ */
+interface FrameStyle extends GeneralStyle {
+    bgImg?: string;
+    scaleType?: ImgScaleType;
+    overflow?: Overflow;
+    gravity?: Gravity;
+    weight?: number;
+    flexGrow?: FlexGrow;
+    flexShrink?: FlexShrink;
+    alignSelf?: AlignSelf;
+}
+
+// frameLayout 标签的定义
+interface FrameNode extends ContainerNode {
+    // 标签名固定为 'frameLayout'
+    type: 'frameLayout';
+    style: FrameStyle;
+}
+```
+
+### `linearLayout` 标签
+
+常用的布局标签之一： 线性布局，类似 Android 里的 linearLayout， 标签名固定为 'linearLayout'，类型定义如下：
+
+```typescript
+/**
+ * linearLayout 标签支持的样式属性， linearLayout 标签只能使用这些样式属性
+ * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
+ */
+interface LinearStyle extends GeneralStyle {
+    bgImg?: string;
+    scaleType?: ImgScaleType;
+    orientation?: Orientation;
+    weightSum?: string;
+    gap?: string;
+    showNum?: string;
+    gravity?: Gravity;
+    weight?: number;
+    flexGrow?: FlexGrow;
+    flexShrink?: FlexShrink;
+    alignSelf?: AlignSelf;
+}
+
+// linearLayout 标签的定义
+interface LinearNode extends ContainerNode {
+    // 标签名固定为 'linearLayout'
+    type: 'linearLayout';
+    style: LinearStyle;
+}
+```
+
+### `scroll` 标签
+
+较常用的布局标签之一： 滚动布局，内部的子元素高度或宽度超出容器尺寸后， 支持滚动，只用在合适的场景里， 标签名固定为 'scroll'，类型定义如下：
+
+```typescript
+/**
+ * scroll 标签支持的样式属性， scroll 标签只能使用这些样式属性
+ * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
+ */
+interface ScrollStyle extends GeneralStyle {
+    orientation: Orientation;
+    gravity?: Gravity;
+    weight?: number;
+    flexGrow?: FlexGrow;
+    flexShrink?: FlexShrink;
+    alignSelf?: AlignSelf;
+}
+
+// scroll 标签的定义
+interface ScrollNode extends ContainerNode {
+    // 标签名固定为 'scroll'
+    type: 'scroll';
+    style: ScrollStyle;
+}
+```
+
+### `span` 标签
+
+常用的内容标签之一： 纯文本标签， 用来渲染文字， 所有文字必须包含在一个 span 标签里， 标签名固定为 'span'，类型定义如下：
+
+```typescript
+/**
+ * span 标签支持的样式属性， span 标签只能使用这些样式属性
+ * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
+ */
+interface SpanStyle {
+    visibility?: Display;
+    fontSize: `${number}`;
+    color: string;
+    ellipsis: Ellipsis;
+    fontWeight: FontWeight;
+    strokeWidth?: string;
+    lineHeight?: string;
+    decoration?: TextDecoration;
+}
+
+// span 标签的定义
+interface SpanNode extends LeafNode {
+    // 标签名固定为 'span'
+    type: 'span';
+    style: SpanStyle;
+
+    /**
+     * 文本内容
+     */
+    text: string;
+}
+```
+
+### `img` 标签
+
+常用的内容标签之一： 图片标签，常用来显示图片， 标签名固定为 'img'，类型定义如下：
+
+```typescript
+/**
+ * img 标签支持的样式属性， img 标签只能使用这些样式属性
+ * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
+ */
+interface ImgStyle extends GeneralStyle {
+    // 图片地址，一个 URL
+    src: string;
+    scaleType: ImgScaleType;
+    placeHolder?: string;
+    gravity?: Gravity;
+    weight?: number;
+    flexGrow?: FlexGrow;
+    flexShrink?: FlexShrink;
+    alignSelf?: AlignSelf;
+}
+
+// img 标签的定义
+interface ImgNode extends LeafNode {
+    // 标签名固定为 'img'
+    type: 'img';
+    style: ImgStyle;
+}
+```
+
+### `lottie` 标签
+
+内容标签之一： lottie 标签， 语法类似 img 标签，但只能用来显示 lottie 资源，标签名固定为 'lottie'， 类型定义如下：
+
+```typescript
+/**
+ * lottie 标签支持的样式属性， lottie 标签只能使用这些样式属性
+ * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
+ */
+interface LottieStyle extends GeneralStyle {
+    // lottie 资源地址， 一个 URL
+    src: string;
+    scaleType: ImgScaleType;
+    placeHolder?: string;
+    loopTime?: string;
+    scale?: string;
+    repeat?: string;
+    resizeMode?: LottieResizeMode;
+    gravity?: Gravity;
+    weight?: number;
+    flexGrow?: FlexGrow;
+    flexShrink?: FlexShrink;
+    alignSelf?: AlignSelf;
+}
+
+// lottie 标签的定义
+interface LottieNode extends Node {
+    // 标签名固定为 'lottie'
+    type: 'lottie';
+    style: LottieStyle;
+}
+```
+
+## 最后
+
+一个合法的 DSL 描述必须符合以下类型：
+
+```typescript
+type DSLNode = FlexNode | FrameNode | LinearNode | ScrollNode | SpanNode | ImgNode | LottieNode;
+```
+
+即：
+
+- DSL 描述里只能使用 `DSLNode` 里定义的这些标签， `type` 字段的值绝对不能出现其他未定义的标签名
+- 各个标签里只能使用该标签类型定义里声明的样式属性， `style` 字段下绝对不能出现该标签类型定义里未声明的属性名(注意定义里使用了 typescript 的  继承语法)
+
+以下是一个基于特定 mock 数据的 DSL 示例：
+
+### 示例
 
 下面是一个比较完整的示例， 包括了 mock 数据， 以及绑定了 mock 数据的 DSL 描述。
 
