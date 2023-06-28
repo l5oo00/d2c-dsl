@@ -1,3 +1,13 @@
+/**
+ * 这个文件定义了一个  Node 类型，代表一个标签节点， 用来描述 UI 界面。
+ *
+ * Node 类型包括了一系列标签， 其中， 只有包含 children 字段的标签才可以包含子节点
+ *
+ * 每个标签都可以指定一系列样式，具体参考每个标签的 style 字段， style 字段里每个属性的含义和 Style 类型里的同名类型含义一致
+ *
+ * 每个标签都可以使用 `condition.mfor` 字段来表示循环生成多个该标签，具体用法参考下面的  Condition 类型
+ */
+
 // 展示策略
 const enum Display {
     // 隐藏，不占位
@@ -269,11 +279,11 @@ interface GeneralStyle {
 // 下面是条件类型定义
 
 /**
- * 条件 For 类型，对于数组和对象数据， 可以使用 mfor 条件来精简 DSL 代码
+ * 条件类型，仅支持 mfor 指令。
  *
- * @example 以 span 标签为例
+ * 对于数组和对象数据， 可以使用 mfor 语法来表示循环一个列表数据， 并生成对应的节点标签， 下面是一个根据数据循环生成 span 标签的示例
  *
- * 遍历数组：
+ * 遍历数组`{x: ['a', 'b', 'c']}`：
  * ```js
  * {
  *     type: 'span',
@@ -288,13 +298,13 @@ interface GeneralStyle {
  * }
  * ```
  *
- * 遍历对象：
+ * 遍历对象`{y: {a: 1, b: 2, c: 3}}`：
  * ```js
  * {
  *     type: 'span',
  *     condition: {
  *         mfor: {
- *             list: '${data.x}', // 变量 x 是个对象
+ *             list: '${data.y}', // 变量 x 是个对象
  *             item: 'val', // 值可以指定任意合法的变量名， 对应对象里单个键值对的值
  *             index: 'key' // 值可以指定任意合法的变量名， 对应对象里单个键值对的健
  *         },
@@ -303,56 +313,17 @@ interface GeneralStyle {
  * }
  * ```
  */
-interface ConditionFor {
-    // 循环的列表变量，支持数组和对象， 值可以是数组或对象常量，也可以绑定数据
-    list: string;
-
-    item: string; // 遍历列表项的变量名，代表该项的值
-    index: string; // 遍历列表项的索引变量名， 代表该项的索引
-}
-
-// 条件类型
 interface Condition {
-    // 是否渲染
-    mif?: string;
-    // 是否展示
-    show?: string;
-    // 循环渲染
-    mfor?: ConditionFor;
+    // 循环的列表变量，支持数组和对象
+    mfor?: {
+        // 要循环的列表数据， 值一般是绑定一个数组数据， 比如 list: '${data.list}'
+        list: string;
+        // 遍历列表项的变量名，代表该项的值
+        item: string;
+        // 遍历列表项的索引变量名， 代表该项的索引
+        index: string;
+    };
 }
-
-// 标签通用类型
-interface Node {
-    /**
-     * 标签名，取值唯一，不能重复
-     */
-    type: string;
-
-    /**
-     * 样式属性，具体参考后面的 Style 类型定义
-     * 注意： 每个标签可能仅支持 Style 类型里部分特定属性， 具体参考后面每个具体标签的定义
-     */
-    style?: Style;
-
-    /**
-     * 条件判断，目前支持 if、show、for， 具体参考后面 Condition 类型定义
-     */
-    condition?: Condition;
-
-    /**
-     * 子节点，可以有多个
-     */
-    children?: Node[];
-}
-
-// 容器标签，可以包含其他子节点
-interface ContainerNode extends Node {
-    // 容器标签一定有 children 字段， 类型必须是一个数组
-    children: Node[];
-}
-
-// 叶子标签，不可以包含其他子节点
-type LeafNode = Omit<Node, 'children' | 'text'>;
 
 // 以下是所有支持的标签的具体定义， 包含了每个标签对应的 样式属性
 
@@ -376,10 +347,20 @@ interface FlexStyle extends GeneralStyle {
 }
 
 // flex 标签的定义，是最常用的布局标签之一：弹性布局
-interface FlexNode extends ContainerNode {
+interface FlexNode {
     // 标签名固定为 'flex'
     type: 'flex';
     style: FlexStyle;
+
+    /**
+     * 条件语法，仅支持 mfor 指令， 具体参考 Condition 类型
+     */
+    condition?: Condition;
+
+    /**
+     * 子节点，可以有多个
+     */
+    children: Node[];
 }
 
 /**
@@ -398,10 +379,20 @@ interface FrameStyle extends GeneralStyle {
 }
 
 // frameLayout 标签的定义，是较常用的布局标签之一： 层叠布局，类似 CSS 里 `position: absolute` 的效果，只用在合适的场景里
-interface FrameNode extends ContainerNode {
+interface FrameNode {
     // 标签名固定为 'frameLayout' , 不是 'frame'
     type: 'frameLayout';
     style: FrameStyle;
+
+    /**
+     * 条件语法，仅支持 mfor 指令， 具体参考 Condition 类型
+     */
+    condition?: Condition;
+
+    /**
+     * 子节点，可以有多个
+     */
+    children: Node[];
 }
 
 /**
@@ -423,10 +414,20 @@ interface LinearStyle extends GeneralStyle {
 }
 
 // linearLayout 标签的定义，是常用的布局标签之一： 线性布局，类似 Android 里的 linearLayout
-interface LinearNode extends ContainerNode {
+interface LinearNode {
     // 标签名固定为 'linearLayout' , 不是 'linear'
     type: 'linearLayout';
     style: LinearStyle;
+
+    /**
+     * 条件语法，仅支持 mfor 指令， 具体参考 Condition 类型
+     */
+    condition?: Condition;
+
+    /**
+     * 子节点，可以有多个
+     */
+    children: Node[];
 }
 
 /**
@@ -443,10 +444,20 @@ interface ScrollStyle extends GeneralStyle {
 }
 
 // scroll 标签的定义，是较常用的布局标签之一： 滚动布局，内部的子元素高度或宽度超出容器尺寸后， 支持滚动，只用在合适的场景里
-interface ScrollNode extends ContainerNode {
+interface ScrollNode {
     // 标签名固定为 'scroll'
     type: 'scroll';
     style: ScrollStyle;
+
+    /**
+     * 条件语法，仅支持 mfor 指令， 具体参考 Condition 类型
+     */
+    condition?: Condition;
+
+    /**
+     * 子节点，可以有多个
+     */
+    children: Node[];
 }
 
 /**
@@ -465,7 +476,7 @@ interface SpanStyle {
 }
 
 // span 标签的定义，是常用的内容标签之一： 纯文本标签， 用来渲染文字， 所有文字内容都只能包含在一个 span 标签里
-interface SpanNode extends LeafNode {
+interface SpanNode {
     // 标签名固定为 'span' , 不是 'text'
     type: 'span';
     style: SpanStyle;
@@ -474,6 +485,11 @@ interface SpanNode extends LeafNode {
      * 文本内容
      */
     text: string;
+
+    /**
+     * 条件语法，仅支持 mfor 指令， 具体参考 Condition 类型
+     */
+    condition?: Condition;
 }
 
 /**
@@ -493,10 +509,15 @@ interface ImgStyle extends GeneralStyle {
 }
 
 // img 标签的定义，是常用的内容标签之一： 图片标签，常用来显示图片
-interface ImgNode extends LeafNode {
+interface ImgNode {
     // 标签名固定为 'img' , 不是 'image'
     type: 'img';
     style: ImgStyle;
+
+    /**
+     * 条件语法，仅支持 mfor 指令， 具体参考 Condition 类型
+     */
+    condition?: Condition;
 }
 
 /**
@@ -520,21 +541,23 @@ interface LottieStyle extends GeneralStyle {
 }
 
 // lottie 标签的定义，是内容标签之一： lottie 标签， 语法类似 img 标签，但只能用来显示 lottie 资源
-interface LottieNode extends Node {
+interface LottieNode {
     // 标签名固定为 'lottie'
     type: 'lottie';
     style: LottieStyle;
+
+    /**
+     * 条件语法，仅支持 mfor 指令， 具体参考 Condition 类型
+     */
+    condition?: Condition;
 }
 
 /**
  * 以下就是标准里定义的所有标签，标签名为每个标签类型定义里的 type 字段，每个 DSL 描述都需要符合以下格式
  */
-export type DSLNode = FlexNode | FrameNode | LinearNode | ScrollNode | SpanNode | ImgNode | LottieNode;
+export type Node = FlexNode | FrameNode | LinearNode | ScrollNode | SpanNode | ImgNode | LottieNode;
 
-
-
-/**
- * @example
+/*
 
 下面是一个比较完整的示例， 包括了 mock 数据， 以及绑定了 mock 数据的 DSL 描述。
 
@@ -559,7 +582,7 @@ DSL 描述：
 > 注意：为了方便描述，DSL 里省略了大部分的样式属性， 同时没有使用 JSON 格式， 而是 JS 里的对象格式
 
 ```javascript
-// 需要严格符合 DSLNode 类型
+// 需要严格符合 Node 类型
 {
     type: 'flex';
     style: {
