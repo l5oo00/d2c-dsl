@@ -396,41 +396,6 @@ interface FrameNode {
 }
 
 /**
- * linearLayout 标签支持的样式属性， linearLayout 标签只能使用这些样式属性
- * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
- */
-interface LinearStyle extends GeneralStyle {
-    bgImg?: string;
-    scaleType?: ImgScaleType;
-    orientation?: Orientation;
-    weightSum?: string;
-    gap?: string;
-    showNum?: string;
-    gravity?: Gravity;
-    weight?: number;
-    flexGrow?: FlexGrow;
-    flexShrink?: FlexShrink;
-    alignSelf?: AlignSelf;
-}
-
-// linearLayout 标签的定义，是常用的布局标签之一： 线性布局，类似 Android 里的 linearLayout
-interface LinearNode {
-    // 标签名固定为 'linearLayout' , 不是 'linear'
-    type: 'linearLayout';
-    style: LinearStyle;
-
-    /**
-     * 条件语法，仅支持 mfor 指令， 具体参考 Condition 类型
-     */
-    condition?: Condition;
-
-    /**
-     * 子节点，可以有多个
-     */
-    children: Node[];
-}
-
-/**
  * scroll 标签支持的样式属性， scroll 标签只能使用这些样式属性
  * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
  */
@@ -555,7 +520,7 @@ interface LottieNode {
 /**
  * 以下就是标准里定义的所有标签，标签名为每个标签类型定义里的 type 字段，每个 DSL 描述都需要符合以下格式
  */
-export type Node = FlexNode | FrameNode | LinearNode | ScrollNode | SpanNode | ImgNode | LottieNode;
+export type Node = FlexNode | FrameNode | ScrollNode | SpanNode | ImgNode | LottieNode;
 
 /*
 
