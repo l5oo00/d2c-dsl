@@ -364,68 +364,6 @@ interface FlexNode {
 }
 
 /**
- * frameLayout 标签支持的样式属性， frameLayout 标签只能使用这些样式属性
- * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
- */
-interface FrameStyle extends GeneralStyle {
-    bgImg?: string;
-    scaleType?: ImgScaleType;
-    overflow?: Overflow;
-    gravity?: Gravity;
-    weight?: number;
-    flexGrow?: FlexGrow;
-    flexShrink?: FlexShrink;
-    alignSelf?: AlignSelf;
-}
-
-// frameLayout 标签的定义，是较常用的布局标签之一： 层叠布局，类似 CSS 里 `position: absolute` 的效果，只用在合适的场景里
-interface FrameNode {
-    // 标签名固定为 'frameLayout' , 不是 'frame'
-    type: 'frameLayout';
-    style: FrameStyle;
-
-    /**
-     * 条件语法，仅支持 mfor 指令， 具体参考 Condition 类型
-     */
-    condition?: Condition;
-
-    /**
-     * 子节点，可以有多个
-     */
-    children: Node[];
-}
-
-/**
- * scroll 标签支持的样式属性， scroll 标签只能使用这些样式属性
- * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
- */
-interface ScrollStyle extends GeneralStyle {
-    orientation: Orientation;
-    gravity?: Gravity;
-    weight?: number;
-    flexGrow?: FlexGrow;
-    flexShrink?: FlexShrink;
-    alignSelf?: AlignSelf;
-}
-
-// scroll 标签的定义，是较常用的布局标签之一： 滚动布局，内部的子元素高度或宽度超出容器尺寸后， 支持滚动，只用在合适的场景里
-interface ScrollNode {
-    // 标签名固定为 'scroll'
-    type: 'scroll';
-    style: ScrollStyle;
-
-    /**
-     * 条件语法，仅支持 mfor 指令， 具体参考 Condition 类型
-     */
-    condition?: Condition;
-
-    /**
-     * 子节点，可以有多个
-     */
-    children: Node[];
-}
-
-/**
  * span 标签支持的样式属性， span 标签只能使用这些样式属性
  * 属性值类型和 Style 类型一致， 属于 Style 类型的一个子集
  */
@@ -520,7 +458,7 @@ interface LottieNode {
 /**
  * 以下就是标准里定义的所有标签，标签名为每个标签类型定义里的 type 字段，每个 DSL 描述都需要符合以下格式
  */
-export type Node = FlexNode | FrameNode | ScrollNode | SpanNode | ImgNode | LottieNode;
+export type Node = FlexNode | SpanNode | ImgNode | LottieNode;
 
 /*
 
